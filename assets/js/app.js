@@ -1,151 +1,185 @@
-var sesion=localStorage.getItem("nombre");
-const checarSesion=()=>{
-    if(sesion!=null){
-        window.location.href="inicio.html";
-    }
+
+// Revisar si hay una sesión activa
+const checarSesion = () => {
+  var sesion = localStorage.getItem("nombre");
+  if (sesion != null) {
+      window.location.href = "inicio.html";
+  }
 }
 
-const registrarUsuario= async()=>{
-    var correo=document.querySelector("#correo").value;
-    var password=document.querySelector("#password").value;
-    var nombre=document.querySelector("#nombre").value;
+// Función para registrar usuario
+const registrarUsuario = async () => {
+  var correo = document.querySelector("#correo").value;
+  var password = document.querySelector("#password").value;
+  var nombre = document.querySelector("#nombre").value;
 
-    if(correo.trim()==='' ||
-        password.trim()===''||
-        nombre.trim()===''){
-            Swal.fire({
-                icon: "error",
-                title: "ERROR",
-                text: "LLENA LOS CAMPOS",
-                footer: 'ELECTROLUZ'
-              })
-        return;
-    }
-    if(!validarCorreo(correo)){
-        Swal.fire({
-            icon: "error",
-            title: "ERROR",
-            text: "INTRODUCE UN CORREO VALIDO",
-            footer: 'ELECTROLUZ'
-          })
-        return;
-    }
-    if(!validarPassword(password)){
-        Swal.fire({
-            icon: "error",
-            title: "ERROR",
-            html: "CONTRASEÑA INVALIDA <br>[Mayúscula, minúscula, númuros y mín 8 carácteres]",
-            footer: 'ELECTROLUZ'
-          })
-        return;
-}
-if(!validarNombre(nombre)){
-    Swal.fire({
-        icon: "error",
-        title: "ERROR",
-        text: "NOMBRE INVALIDO",
-        footer: 'ELECTROLUZ'
-      })
-    return;
-}
+  // Validar campos vacíos
+  if (correo.trim() === '' || password.trim() === '' || nombre.trim() === '') {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "LLENA LOS CAMPOS",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-//insertar base de datos
-const datos = new FormData();
-datos.append("correo",correo);
-datos.append("password",password);
-datos.append("nombre",nombre);
+  // Validar correo
+  if (!validarCorreo(correo)) {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "INTRODUCE UN CORREO VÁLIDO",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-var respuesta=await fetch("php/usuario/registrarUsuario.php",{
-    method:'POST',
-    body:datos
-});
+  // Validar contraseña
+  if (!validarPassword(password)) {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          html: "CONTRASEÑA INVÁLIDA <br>Mayúscula, minúscula, números y mín 8 caracteres",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-var resultado= await respuesta.json();
+  // Validar nombre
+  if (!validarNombre(nombre)) {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "NOMBRE INVÁLIDO",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-if(resultado.success==true){
-    Swal.fire({
-        icon: "success",
-        title: "EXITO!",
-        text: resultado,mensaje,
-        footer: 'ELECTROLUZ'
-      })
-      document.querySelector("#formRegistrar").reset();
-      setTimeout(()=>{
-        window.location.href="index.html";
-      },2000);
-}else{
-    Swal.fire({
-        icon: "error",
-        title: "ERROR",
-        text: resultado,mensaje,
-        footer: 'ELECTROLUZ'
-      })
-}
+  // Enviar datos al servidor
+  const datos = new FormData();
+  datos.append("correo", correo);
+  datos.append("password", password);
+  datos.append("nombre", nombre);
 
-}
+  try {
+      var respuesta = await fetch("php/usuario/registrarUsuario.php", {
+          method: 'POST',
+          body: datos
+      });
 
-const loginUsuario= async()=>{
-    var correo=document.querySelector("#correo").value;
-    var password=document.querySelector("#password").value;
-    
-    if(correo.trim()=== '' || password.trim() === ''){
-            Swal.fire({
-                icon: "error",
-                title: "ERROR",
-                text: "LLENA LOS CAMPOS",
-                footer: 'ELECTROLUZ'
-              })
-        return;
-    }
-    if(!validarCorreo(correo)){
-        Swal.fire({
-            icon: "error",
-            title: "ERROR",
-            text: "INTRODUCE UN CORREO VALIDO",
-            footer: 'ELECTROLUZ'
-          })
-        return;
-    }
-    if(!validarPassword(password)){
-        Swal.fire({
-            icon: "error",
-            title: "ERROR",
-            html: "CONTRASEÑA INVALIDA <br>[Mayúscula, minúscula, númuros y mín 8 carácteres]",
-            footer: 'ELECTROLUZ'
-          })
-        return;
+      var resultado = await respuesta.json();
+
+      if (resultado.success === true) {
+          Swal.fire({
+              icon: "success",
+              title: "ÉXITO!",
+              text: resultado.mensaje,
+              footer: 'ELECTROLUZ'
+          });
+          document.querySelector("#formRegistrar").reset();
+          setTimeout(() => {
+              window.location.href = "index.html";
+          }, 2000);
+      } else {
+          Swal.fire({
+              icon: "error",
+              title: "ERROR",
+              text: resultado.mensaje,
+              footer: 'ELECTROLUZ'
+          });
+      }
+  } catch (error) {
+      console.error('Hubo un problema con la solicitud:', error);
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "Hubo un problema con la solicitud. Inténtalo de nuevo más tarde.",
+          footer: 'ELECTROLUZ'
+      });
+  }
 }
 
-const datos = new FormData();
-datos.append("correo",correo);
-datos.append("password",password);
+// Función para iniciar sesión de usuario
+const loginUsuario = async () => {
+  var correo = document.querySelector("#correo").value;
+  var password = document.querySelector("#password").value;
 
-var respuesta=await fetch("php/usuario/loginUsuario.php",{
-    method:'POST',
-    body:datos
-});
+  // Validar campos vacíos
+  if (correo.trim() === '' || password.trim() === '') {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "LLENA LOS CAMPOS",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-var resultado= await respuesta.json();
+  // Validar correo
+  if (!validarCorreo(correo)) {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "INTRODUCE UN CORREO VÁLIDO",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
 
-if(resultado.success==true){
-    Swal.fire({
-        icon: "success",
-        title: "EXITO!",
-        text: resultado,mensaje,
-        footer: 'ELECTROLUZ'
-      })
-      document.querySelector("#formIniciar").reset();
-      localStorage.setItem("nombre", resultado.nombre)
-      setTimeout(()=>{
-        window.location.href="inicio.html";
-      },2000);
-}else{
-    Swal.fire({
-        icon: "error",
-        title: "ERROR",
-        text: resultado,mensaje,
-        footer: 'ELECTROLUZ'
-      })
+  // Validar contraseña
+  if (!validarPassword(password)) {
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          html: "CONTRASEÑA INVÁLIDA <br>[Mayúscula, minúscula, números y mín 8 caracteres]",
+          footer: 'ELECTROLUZ'
+      });
+      return;
+  }
+
+  // Enviar datos al servidor
+  const datos = new FormData();
+  datos.append("correo", correo);
+  datos.append("password", password);
+
+  try {
+      var respuesta = await fetch("php/usuario/loginUsuario.php", {
+          method: 'POST',
+          body: datos
+      });
+
+      var resultado = await respuesta.json();
+
+      if (resultado.success === true) {
+          Swal.fire({
+              icon: "success",
+              title: "ÉXITO!",
+              text: resultado.mensaje,
+              footer: 'ELECTROLUZ'
+          });
+          document.querySelector("#formIniciar").reset();
+          localStorage.setItem("nombre", resultado.nombre);
+          setTimeout(() => {
+              window.location.href = "inicio.html";
+          }, 2000);
+      } else {
+          Swal.fire({
+              icon: "error",
+              title: "ERROR",
+              text: resultado.mensaje,
+              footer: 'ELECTROLUZ'
+          });
+      }
+  } catch (error) {
+      console.error('Hubo un problema con la solicitud:', error);
+      Swal.fire({
+          icon: "error",
+          title: "ERROR",
+          text: "Hubo un problema con la solicitud. Inténtalo de nuevo más tarde.",
+          footer: 'ELECTROLUZ'
+      });
+  }
 }
 
-}
